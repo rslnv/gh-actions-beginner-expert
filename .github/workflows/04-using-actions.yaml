@@ -7,6 +7,6 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@5
+        uses: actions/checkout@v5
       - name: Print Folders
         run: ls
