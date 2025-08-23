@@ -22,10 +22,17 @@ jobs:
       - name: Build
         id: build
         run: |
+          echo "$GITHUB_OUTPUT"
           echo "STATUS=${{ inputs.build-status }}" >> "$GITHUB_OUTPUT"
+          echo "FOO=foo" >> "$GITHUB_OUTPUT"
+          echo "BAR=bar" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
       - name: Print GITHUB_OUTPUT contents
-        run: cat "$GITHUB_OUTPUT"
+        run: |
+          echo "$GITHUB_OUTPUT"
+          echo "BAZ=baz" >> "$GITHUB_OUTPUT"
+          echo "BAZ1=baz1" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
 
   deploy:
     runs-on: ubuntu-latest
