@@ -5,7 +5,7 @@ on:
     inputs:
       pass-unit-tests:
         type: boolean
-        description: Requires unit tests to pass or not
+        description: Making unit tests to pass or not
         default: true
 
 jobs:
