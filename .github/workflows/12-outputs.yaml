@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build-status: ${{ steps.build.outputs.STATUS }}
+      baz: ${{ steps.clean-up.outputs.BAZ }}
+      baz1: ${{ steps.clean-up.outputs.BAZ1 }}
     steps:
       - name: Print GITHUB_OUTPUT path
         run: echo "$GITHUB_OUTPUT"
@@ -28,6 +30,7 @@ jobs:
           echo "BAR=bar" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
       - name: Overwrite contents of GITHUB_OUTPUT
+        id: clean-up
         run: |
           echo "$GITHUB_OUTPUT"
           echo "BAZ=baz" >> "$GITHUB_OUTPUT"
@@ -41,3 +44,7 @@ jobs:
     steps:
       - name: Deploy
         run: echo "Deploying"
+      - name: Print Outputs
+        run: |
+          echo "BAZ value: ${{ needs.build.outputs.baz }}"
+          echo "BAZ1 value: ${{ needs.build.outputs.baz1 }}"
