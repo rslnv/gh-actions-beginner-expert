@@ -27,7 +27,7 @@ jobs:
           echo "FOO=foo" >> "$GITHUB_OUTPUT"
           echo "BAR=bar" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
-      - name: Print GITHUB_OUTPUT contents
+      - name: Overwrite contents of GITHUB_OUTPUT
         run: |
           echo "$GITHUB_OUTPUT"
           echo "BAZ=baz" >> "$GITHUB_OUTPUT"
