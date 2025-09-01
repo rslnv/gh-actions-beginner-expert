@@ -48,7 +48,7 @@ jobs:
 
     strategy:
       matrix:
-        color: [red, gree]
+        color: [red, green]
         shape: [circle, square]
         size: [small, large]
         include:
@@ -59,8 +59,13 @@ jobs:
             opacity: 100
           - color: red
             shape: triangle
+
+          - color: green
+            shape: circle
+            size: medium
         exclude: # !!! processed before includes
-          - opacity: 75
+          - color: green
+            shape: circle
 
     steps:
       - name: Print variant
