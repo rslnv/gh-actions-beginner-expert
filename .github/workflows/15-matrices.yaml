@@ -59,6 +59,8 @@ jobs:
             opacity: 100
           - color: red
             shape: triangle
+        exclude: # !!! processed before includes
+          - opacity: 75
 
     steps:
       - name: Print variant
