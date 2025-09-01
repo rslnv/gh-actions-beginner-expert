@@ -54,3 +54,7 @@ jobs:
         include:
           - color: red
             shape: triangle
+
+    steps:
+      - name: Print variant
+        run: echo "${{ matrix.color }}-${{ matrix.shape }}-${{ matrix.size }}"
