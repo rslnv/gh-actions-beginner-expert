@@ -14,4 +14,4 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Check for dependency update
-        uses: ./.gitub/actions/js-dependency-update
+        uses: ./.github/actions/js-dependency-update
