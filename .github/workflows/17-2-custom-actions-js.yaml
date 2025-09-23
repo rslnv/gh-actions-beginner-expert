@@ -1,0 +1,17 @@
+name: 17-2 - Custom Actions JS
+run-name: 17-2 - Custom Actions JS
+
+on:
+  workflow_dispatch:
+
+env:
+  working-directory: 17-custom-actions/react-app
+
+jobs:
+  dependency-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for dependency update
+        uses: ./.gitub/actions/js-dependency-update

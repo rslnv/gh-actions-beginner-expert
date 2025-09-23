@@ -1,0 +1,6 @@
+name: Update NPM Dependencies
+description: Checks for available updates of NPM packages, and creates PR with updated package*.json files.
+
+runs:
+  using: node20
+  main: index.js
