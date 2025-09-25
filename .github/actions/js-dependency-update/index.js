@@ -3,29 +3,20 @@ const exec = require("@actions/exec");
 const github = require("@actions/github");
 
 async function run() {
-  /*
-  1. Parse inputs:
-    1.1. base-branch to check for updates
-    1.2. target-branch for PR
-    1.3. GitHub Token for authentication
-    1.4. Working directory
-  2. Execute the npm update command within the working directory
-  3. Check for modified package*.json files
-  4. If modified
-    4.1. Add and commit changes to target-branch
-    4.2. Create PR to the base-branch using the octokit API
-  */
   const baseBranch = core.getInput("base-branch", { required: true });
-  const targetBranch = core.getInput("target-branch", { required: true });
+  const headBranch = core.getInput("head-branch", { required: true });
   const workingDir = core.getInput("working-directory", { required: true });
   const ghToken = core.getInput("gh-token", { required: true });
   const debug = core.getBooleanInput("debug");
+  const logger = setupLogger({ debug, prefix: "[js-dependency-update]" });
 
   const commonExecOpts = {
     cwd: workingDir,
   };
 
   core.setSecret(ghToken);
+
+  logger.debug("Validating base-branch, head-branch, and working-directory");
 
   if (!validateBranchName(baseBranch)) {
     core.setFailed(
@@ -34,9 +25,9 @@ async function run() {
     return;
   }
 
-  if (!validateBranchName(targetBranch)) {
+  if (!validateBranchName(headBranch)) {
     core.setFailed(
-      `Invalid targer-branch '${targetBranch}'. Branch names should contain only characters, numbers, hyphens, underscores, dots, and forward slashes`,
+      `Invalid targer-branch '${headBranch}'. Branch names should contain only characters, numbers, hyphens, underscores, dots, and forward slashes`,
     );
     return;
   }
@@ -48,9 +39,11 @@ async function run() {
     return;
   }
 
-  core.info(`[js-dependency-update] base-branch = ${baseBranch}`);
-  core.info(`[js-dependency-update] target-branch = ${targetBranch}`);
-  core.info(`[js-dependency-update] working-directory = ${workingDir}`);
+  logger.debug(`base-branch = ${baseBranch}`);
+  logger.debug(`head-branch = ${headBranch}`);
+  logger.debug(`working-directory = ${workingDir}`);
+
+  logger.debug("Checking for package updates");
 
   await exec.exec("npm update", [], {
     ...commonExecOpts,
@@ -64,43 +57,50 @@ async function run() {
     },
   );
 
-  if (gitStatus.stdout.length == 0) {
-    core.info("[js-dependency-update] no updates");
+  if (!gitStatus.stdout.length) {
+    logger.info("no updates");
+    return;
   }
 
-  core.info("[js-dependency-updae] updates available");
+  logger.debug("updates available");
 
-  await exec.exec(`git config --global user.name "gh-automation"`);
-  await exec.exec(`git config --global user.email "gh-automation@email.com"`);
-  await exec.exec(`git checkout -b ${targetBranch}`, [], {
+  logger.debug("setting up git");
+
+  await setupGit();
+
+  logger.debug("committing and pushing package*.json changes");
+  await exec.exec(`git checkout -b ${headBranch}`, [], {
     ...commonExecOpts,
   });
   await exec.exec(`git add package.json package-lock.json`, [], {
     ...commonExecOpts,
   });
+
   await exec.exec(`git commit -m "chore: update dependencies"`, [], {
     ...commonExecOpts,
   });
   // Requires 'Allow GitHub Actions to create and approve pull requests'
   // In Settings -> Actions -> General
-  await exec.exec(`git push -u origin ${targetBranch} --force`, [], {
+  await exec.exec(`git push -u origin ${headBranch} --force`, [], {
     ...commonExecOpts,
   });
 
+  logger.debug("fetching octokit api");
   const octokit = github.getOctokit(ghToken);
 
   try {
+    logger.debug(`creating PR using head-branch ${headBranch}`);
     await octokit.rest.pulls.create({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       title: "Update NPM dependencies",
       body: "This pull request updates NPM packages",
       base: baseBranch,
-      head: targetBranch,
+      head: headBranch,
     });
   } catch (e) {
-    core.error("[js-dependency-update] Failed to create PR. See below");
-    core.error(e);
+    logger.error("Failed to create PR. See below");
+    logger.error(e);
     core.setFailed(e.message);
   }
 }
@@ -112,5 +112,18 @@ const direcoryNameRegEx = /^[a-zA-Z0-9_\-\/]+$/;
 
 const validateBranchName = (name) => branchNameRegEx.test(name);
 const validateDirectoryName = (name) => direcoryNameRegEx.test(name);
+
+const setupGit = async () => {
+  await exec.exec(`git config --global user.name "gh-automation"`);
+  await exec.exec(`git config --global user.email "gh-automation@email.com"`);
+};
+
+const setupLogger = ({ debug, prefix } = { debug: false, prefix: "" }) => ({
+  debug: (message) => {
+    if (debug) core.info(`DEBUG: ${prefix}${prefix ? " " : ""}${message}`);
+  },
+  info: (message) => core.info(`${prefix}${prefix ? " " : ""}${message}`),
+  error: (message) => core.error(`${prefix}${prefix ? " " : ""}${message}`),
+});
 
 run();
