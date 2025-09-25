@@ -1,5 +1,6 @@
 const core = require("@actions/core");
 const exec = require("@actions/exec");
+const github = require("@actions/github");
 
 async function run() {
   /*
@@ -14,11 +15,15 @@ async function run() {
     4.1. Add and commit changes to target-branch
     4.2. Create PR to the base-branch using the octokit API
   */
-  const baseBranch = core.getInput("base-branch");
-  const targetBranch = core.getInput("target-branch");
-  const workingDir = core.getInput("working-directory");
-  const ghToken = core.getInput("gh-token");
+  const baseBranch = core.getInput("base-branch", { required: true });
+  const targetBranch = core.getInput("target-branch", { required: true });
+  const workingDir = core.getInput("working-directory", { required: true });
+  const ghToken = core.getInput("gh-token", { required: true });
   const debug = core.getBooleanInput("debug");
+
+  const commonExecOpts = {
+    cwd: workingDir,
+  };
 
   core.setSecret(ghToken);
 
@@ -43,29 +48,59 @@ async function run() {
     return;
   }
 
-  core.info(`[js-dependency-updae] base-branch = ${baseBranch}`);
-  core.info(`[js-dependency-updae] target-branch = ${targetBranch}`);
-  core.info(`[js-dependency-updae] working-directory = ${workingDir}`);
+  core.info(`[js-dependency-update] base-branch = ${baseBranch}`);
+  core.info(`[js-dependency-update] target-branch = ${targetBranch}`);
+  core.info(`[js-dependency-update] working-directory = ${workingDir}`);
 
   await exec.exec("npm update", [], {
-    cwd: workingDir,
+    ...commonExecOpts,
   });
 
   const gitStatus = await exec.getExecOutput(
     "git status -s package*.json",
     [],
     {
-      cwd: workingDir,
+      ...commonExecOpts,
     },
   );
 
-  if (gitStatus.stdout.length > 0) {
-    core.info("[js-dependency-updae] updates available");
-  } else {
-    core.info("[js-dependency-updae] no updates");
+  if (gitStatus.stdout.length == 0) {
+    core.info("[js-dependency-update] no updates");
   }
 
-  core.info("I am a custom JS action");
+  core.info("[js-dependency-updae] updates available");
+
+  await exec.exec(`git config --global user.name "gh-automation"`);
+  await exec.exec(`git config --global user.email "gh-automation@email.com"`);
+  await exec.exec(`git chechout -b ${targetBranch}`, [], {
+    ...commonExecOpts,
+  });
+  await exec.exec(`git add package.json package-lock.json`, [], {
+    ...commonExecOpts,
+  });
+  await exec.exec(`git commit -m "chore: update dependencies"`, [], {
+    ...commonExecOpts,
+  });
+  await exec.exec(`git push -u origin ${targetBranch} --force`, [], {
+    ...commonExecOpts,
+  });
+
+  const octokit = github.getOctokit(ghToken);
+
+  try {
+    await octokit.rest.pulls.create({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      title: "Update NPM dependencies",
+      body: "This pull request updates NPM packages",
+      base: baseBranch,
+      head: targetBranch,
+    });
+  } catch (e) {
+    core.error("[js-dependency-update] Failed to create PR. See below");
+    core.error(e);
+    core.setFailed(e.message);
+  }
 }
 
 // letters, digits, _, -, ., /
