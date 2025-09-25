@@ -81,6 +81,8 @@ async function run() {
   await exec.exec(`git commit -m "chore: update dependencies"`, [], {
     ...commonExecOpts,
   });
+  // Requires 'Allow GitHub Actions to create and approve pull requests'
+  // In Settings -> Actions -> General
   await exec.exec(`git push -u origin ${targetBranch} --force`, [], {
     ...commonExecOpts,
   });
