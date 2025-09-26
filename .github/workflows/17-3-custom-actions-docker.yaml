@@ -4,8 +4,20 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        type: string
-        default: "https://www.github.com"
+        description: URL to ping
+        type: choice
+        options:
+          - "https://www.github.com"
+          - "https://www.website-that-fails-foobarbaz.com"
+          - "website-that-fails"
+      max_attempts:
+        description: Number of attempts before failure
+        default: "10"
+        required: false
+      delay:
+        description: Delay in seconds between attempts
+        default: "5"
+        required: false
 
 jobs:
   ping-url:
@@ -17,3 +29,5 @@ jobs:
         uses: ./.github/actions/docker-ping-url
         with:
           url: ${{ inputs.url }}
+          max_attempts: ${{ inputs.max_attempts }}
+          delay: ${{ inputs.delay }}
