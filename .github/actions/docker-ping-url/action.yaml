@@ -10,10 +10,10 @@ name: Ping URL
 description: Ping URL until maximum attempts exceeded. Fails if result code is not 200
 
 inputs:
-  url:
+  url: # INPUT_URL
     description: URL to ping
     required: true
-  max-attempts:
+  max_attempts: # INPUT_MAX_ATTEMPTS
     description: Number of attempts before failure
     default: 10
     required: false
