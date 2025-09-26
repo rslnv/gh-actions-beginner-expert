@@ -59,7 +59,7 @@ async function run() {
 
   const updatesAvailable = gitStatus.stdout.length > 0;
 
-  logger.debug(`Setting 'updates-available' output to ${{ updatesAvailable }}`);
+  logger.debug(`Setting 'updates-available' output to ${updatesAvailable}`);
   core.setOutput("updates-available", updatesAvailable);
 
   if (!updatesAvailable) {
