@@ -57,7 +57,12 @@ async function run() {
     },
   );
 
-  if (!gitStatus.stdout.length) {
+  const updatesAvailable = gitStatus.stdout.length > 0;
+
+  core.debug(`Setting 'updates-available' output to ${{ updatesAvailable }}`);
+  core.setOutput("updates-available", updatesAvailable);
+
+  if (!updatesAvailable) {
     logger.info("no updates");
     return;
   }
