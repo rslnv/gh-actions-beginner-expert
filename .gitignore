@@ -1,3 +1,4 @@
 node_modules
+venv/
 
 !.github/actions/**/node_modules

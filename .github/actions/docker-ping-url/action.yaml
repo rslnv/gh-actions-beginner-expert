@@ -1,0 +1,27 @@
+# Create local python environment in this folder with
+# install 'requests' package for local env
+# store dependencies in a file
+#
+# python -m venv venv
+# venv/bin/pip install requests
+# venv/bin/pip freeze > requirements.txt
+
+name: Ping URL
+description: Ping URL until maximum attempts exceeded. Fails if result code is not 200
+
+inputs:
+  url:
+    description: URL to ping
+    required: true
+  max-attempts:
+    description: Number of attempts before failure
+    default: 10
+    required: false
+  delay:
+    description: Delay in seconds between attempts
+    default: 5
+    required: false
+
+runs:
+  using: docker
+  image: Dockerfile
