@@ -10,7 +10,7 @@ jobs:
       target-directory: dummy-dir
 
   e2e-tests:
-    uses: rslnv/gh-actions-beginner-expert-e2e/.github/workflows/e2e.yaml@mail # tag, release or full sha can be used
+    uses: rslnv/gh-actions-beginner-expert-e2e/.github/workflows/e2e.yaml@main # tag, release or full sha can be used
 
   print-outputs:
     runs-on: ubuntu-latest
