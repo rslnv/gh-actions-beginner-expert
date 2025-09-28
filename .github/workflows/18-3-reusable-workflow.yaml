@@ -12,11 +12,3 @@ jobs:
   e2e-tests:
     uses: rslnv/gh-actions-beginner-expert-e2e/.github/workflows/e2e.yaml@main # tag, release or full sha can be used
 
-  print-outputs:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - name: Print outputs
-        run: |
-          echo "Build status: ${{ needs.deploy.outputs.build-status }}"
-          echo "URL: ${{ needs.deploy.outputs.url }}"
