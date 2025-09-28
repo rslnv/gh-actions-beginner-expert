@@ -11,4 +11,5 @@ jobs:
 
   e2e-tests:
     uses: rslnv/gh-actions-beginner-expert-e2e/.github/workflows/e2e.yaml@main # tag, release or full sha can be used
-
+    secrets:
+      access-token: ${{ secrets.GH_TOKEN_E2E }}
