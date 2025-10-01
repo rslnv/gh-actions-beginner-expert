@@ -4,7 +4,10 @@ on:
   pull_request:
 
 jobs:
-  usafe-pr:
+  # script injection can be done
+  # on open pull request -> title
+  # "some title"; ls -R;
+  unsafe-pr:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -14,6 +17,23 @@ jobs:
         run: |
           title=${{ github.event.pull_request.title }}
           if [[ $title =~ ^feat ]]; then
+          echo "PR is a feature"
+          exit 0
+          else
+          echo "PR is not a feature"
+          exit 1
+          fi
+  safer-pr:
+    runs-on: ubuntu-latest
+    env:
+      TITLE: ${{ github.event.pull_request.title }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Check PR title
+        run: |
+          if [[ $TITLE =~ ^feat ]]; then
           echo "PR is a feature"
           exit 0
           else
